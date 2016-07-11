@@ -37,9 +37,9 @@ public:
 		:_root(NULL)
 	{}
 
-	bool Insert(const K& key, const V& value)
+bool Insert(const K& key, const V& value)
 	{
-		if (_root == NULL)  // 没有节点
+		if (_root == NULL)
 		{
 			_root = new Node(key, value);
 			_root->_col = BLACK;
@@ -48,18 +48,17 @@ public:
 
 		Node* parent = NULL;
 		Node* cur = _root;
-
 		while (cur)
 		{
-			if (cur->_key > key)
-			{
-				parent = cur;
-				cur = cur->_left;
-			}
-			else if (cur->_key < key)
+			if (cur->_key < key)
 			{
 				parent = cur;
 				cur = cur->_right;
+			}
+			else if (cur->_key > key)
+			{
+				parent = cur;
+				cur = cur->_left;
 			}
 			else
 			{
@@ -67,6 +66,7 @@ public:
 			}
 		}
 
+		//找到位置，现在开始插入节点
 		if (parent->_key > key)
 		{
 			cur = new Node(key, value);
@@ -80,64 +80,53 @@ public:
 			cur->_parent = parent;
 		}
 
-		//cur为红，parent为红，g为黑，u存在且为红
 		while (cur != _root && parent->_col == RED)
 		{
 			Node* grandfather = parent->_parent;
 			if (parent == grandfather->_left)
 			{
+				// 情况1
 				Node* uncle = grandfather->_right;
 				if (uncle && uncle->_col == RED)
 				{
-					uncle->_col = BLACK;
 					parent->_col = BLACK;
+					uncle->_col = BLACK;
 					grandfather->_col = RED;
 
-					//继续向上调整
+					//以祖父节点为当前节点继续向上遍历
 					cur = grandfather;
 					parent = cur->_parent;
 				}
-				else // uncle不存在或uncle为黑
+				else
 				{
-					/*if (parent->_left == cur)
-					{
-						parent->_col = BLACK;
-						grandfather->_col = RED;
+					//情况2，情况3, 此时uncle节点不存在或为黑色
 
-						_RotateR(grandfather);
-					}
-					else
-					{
-						parent->_col = BLACK;
-						grandfather->_col = RED;
-
-						_RtateL(parent);
-					}*/
-
+					//情况3,当cur是P的右孩子
 					if (parent->_right == cur)
 					{
 						_RotateL(parent);
 					}
 
-					//由于没有右子树，需进行右旋调整
+					//左旋后转为情况2，再进行右旋
+
 					parent->_col = BLACK;
 					grandfather->_col = RED;
-
 					_RotateR(grandfather);
 
 					break;
 				}
 			}
-			else
+			else  // grandfather->_right == parent
 			{
 				Node* uncle = grandfather->_left;
 
+				//与情况1相同
 				if (uncle && uncle->_col == RED)
 				{
-					uncle->_col = BLACK;
-					parent->_col = BLACK;
+					parent->_col = uncle->_col = BLACK;
 					grandfather->_col = RED;
 
+					//以祖父节点为当前节点继续向上遍历
 					cur = grandfather;
 					parent = cur->_parent;
 				}
@@ -148,16 +137,19 @@ public:
 						_RotateR(parent);
 					}
 
+					//右旋后转情况2,再进行左旋
+
 					parent->_col = BLACK;
 					grandfather->_col = RED;
+
 					_RotateL(grandfather);
 
 					break;
 				}
 			}
 		}
-
-		_root->_col = BLACK; //插入结束，将根节点置黑
+		_root->_col = BLACK;
+		return true;
 	}
 
 	//中序遍历
@@ -313,7 +305,8 @@ protected:
 
 void TestRBTree()
 {
-	int a[] = { 1, 4, 6, 8, 0, 2, 3, 5, 9, 7 };
+	int a[] = { 16, 3, 7, 11, 9, 26, 18, 14, 15, 20, 100, 0, 1, 2, 5 };
+	
 	RBTree<int, int> rb;
 
 	for (size_t i = 0; i < sizeof(a) / sizeof(a[0]); ++i)
@@ -324,3 +317,8 @@ void TestRBTree()
 	rb.InOrder();
 	cout<< rb.Check() <<endl;
 }
+
+
+
+
+
